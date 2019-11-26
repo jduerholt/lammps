@@ -61,7 +61,7 @@ FixDfield::FixDfield(LAMMPS *lmp, int narg, char **arg) :
   extscalar = 1;
   respa_level_support = 1;
   ilevel_respa = 0;
-  //virial_flag = 1;
+  virial_flag = 1;
 
   dxflag = dyflag = dzflag = 1;
 
@@ -405,34 +405,24 @@ void FixDfield::post_force(int vflag)
     pol[1]=volumeinv*c_OmegaPy->scalar;
     pol[2]=volumeinv*c_OmegaPz->scalar;
 
-    //std::cout << pol[0] << std::endl;
-    //std::cout << pol[1] << std::endl;
-    //std::cout << pol[2] << std::endl;
-
 
     // calculate DmP, TODO loop over it
     if(dxflag){DmP[0] += D[0]-pol[0];}
     if(dyflag){DmP[1] += D[1]-pol[1];}
     if(dzflag){DmP[2] += D[2]-pol[2];}
 
-    //std::cout << DmP[0] << std::endl;
-    //std::cout << DmP[1] << std::endl;
-    //std::cout << DmP[2] << std::endl;
 
     // now we can calculate the energy, works only for unit system real
     // eps0 in units of unitcharge/(V*Angstrom)
-    // efact is faraday const *0.1/eps0
+    // efact is faraday const *0.001/eps0
+    // then we have units of KJ/mol
+    // to go to kcal/mol it is multiplied by 0.239
     double epsilon0 = 5.526348e-3;
     double efact = 0.239*96.4853082e0/epsilon0;
-    ///double efact = 9648.53082e0/epsilon0;
-    // energy is afterwards in kJ/mol
 
     fsum[0] = fsum[0] + volume/2.0e0*efact*(DmP[0]*DmP[0]);
     fsum[0] = fsum[0] + volume/2.0e0*efact*(DmP[1]*DmP[1]);
     fsum[0] = fsum[0] + volume/2.0e0*efact*(DmP[2]*DmP[2]);
-
-    //std::cout <<fsum[0]<< std::endl;
-
 
 
     // now we have to compute the forces
@@ -446,9 +436,7 @@ void FixDfield::post_force(int vflag)
           f[i][0] += fx;
           f[i][1] += fy;
           f[i][2] += fz;
-          //std::cout <<fx<< std::endl;
-          //std::cout <<fy<< std::endl;
-          //std::cout <<fz<< std::endl;
+          
           domain->unmap(x[i],image[i],unwrap);
 
           fsum[1] += fx;
@@ -456,6 +444,26 @@ void FixDfield::post_force(int vflag)
           fsum[3] += fz;
         }
       }
+      // now we compute the maxwell stress tensor
+      double efact2 = 1.0e0/efact;
+      double Ef[3];
+      Ef[0] = DmP[0]*efact;
+      Ef[1] = DmP[1]*efact;
+      Ef[2] = DmP[2]*efact;
+      // diag are the diagonal elements substracted on the diagonals
+      // of the tensor
+      double diag = 0.5e0 * efact2 * (Ef[0]*Ef[0]+Ef[1]*Ef[1]+Ef[2]*Ef[2]);
+      // now we compute the stress or virial
+      // starting from the diagonal elements 
+      // v_xx, v_yy and v_zz
+      virial[0]-=volume*(efact2*Ef[0]*Ef[0]-diag);
+      virial[1]-=volume*(efact2*Ef[1]*Ef[1]-diag);
+      virial[2]-=volume*(efact2*Ef[2]*Ef[2]-diag);
+      // now compute the offiagonals
+      // v_xy, v_xz, and v_yz
+      virial[3]-=volume*efact2*Ef[0]*Ef[1];
+      virial[4]-=volume*efact2*Ef[0]*Ef[2];
+      virial[5]-=volume*efact2*Ef[1]*Ef[2];
     }
 
     if (muflag){
