@@ -640,6 +640,61 @@ void *lammps_extract_fix(void *ptr, char *id, int style, int type,
   return NULL;
 }
 
+void *lammps_extract_nlist_mapping(void *ptr, char *id)
+{
+  LAMMPS *lmp = (LAMMPS *) ptr;
+
+  BEGIN_CAPTURE
+  {
+    int ifix = lmp->modify->find_fix(id);
+    if (ifix < 0) return NULL;
+    //std::cout << ifix<<std::endl;
+    Fix *fix = lmp->modify->fix[ifix];
+
+    // need to check the flag
+    return fix->nlist_mapping;
+  }
+  END_CAPTURE
+
+  return NULL;
+}
+
+void *lammps_extract_nlist_neighbors(void *ptr, char *id)
+{
+  LAMMPS *lmp = (LAMMPS *) ptr;
+
+  BEGIN_CAPTURE
+  {
+    int ifix = lmp->modify->find_fix(id);
+    if (ifix < 0) return NULL;
+    Fix *fix = lmp->modify->fix[ifix];
+
+    // need to check the flag
+    return fix->nlist_neighbors;
+  }
+  END_CAPTURE
+
+  return NULL;
+}
+
+void *lammps_extract_nlist_offset(void *ptr, char *id)
+{
+  LAMMPS *lmp = (LAMMPS *) ptr;
+
+  BEGIN_CAPTURE
+  {
+    int ifix = lmp->modify->find_fix(id);
+    if (ifix < 0) return NULL;
+    Fix *fix = lmp->modify->fix[ifix];
+
+    // need to check the flag
+    return fix->nlist_offset;
+  }
+  END_CAPTURE
+
+  return NULL;
+}
+
 /* ----------------------------------------------------------------------
    extract a pointer to an internal LAMMPS evaluated variable
    name = variable name, must be equal-style or atom-style variable

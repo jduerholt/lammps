@@ -86,6 +86,11 @@ class Fix : protected Pointers {
   double *vector_local;          // computed local vector
   double **array_local;          // computed local array
 
+  // JPD THIS IS A HACK!
+  int *nlist_mapping;
+  int *nlist_neighbors;
+  int *nlist_offset;
+
   int comm_forward;              // size of forward communication (0 if none)
   int comm_reverse;              // size of reverse communication (0 if none)
   int comm_border;               // size of border communication (0 if none)

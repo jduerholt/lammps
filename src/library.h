@@ -44,6 +44,10 @@ void *lammps_extract_compute(void *, char *, int, int);
 void *lammps_extract_fix(void *, char *, int, int, int, int);
 void *lammps_extract_variable(void *, char *, char *);
 
+void *lammps_extract_nlist_mapping(void *, char *id);
+void *lammps_extract_nlist_neighbors(void *, char *id);
+void *lammps_extract_nlist_offset(void *, char *id);
+
 double lammps_get_thermo(void *, char *);
 int lammps_get_natoms(void *);
 

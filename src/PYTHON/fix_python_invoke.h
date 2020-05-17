@@ -22,6 +22,7 @@ FixStyle(python/invoke,FixPythonInvoke)
 #define LMP_FIX_PYTHON_INVOKE_H
 
 #include "fix.h"
+#include <vector>
 
 namespace LAMMPS_NS {
 
@@ -30,16 +31,28 @@ class FixPythonInvoke : public Fix {
   FixPythonInvoke(class LAMMPS *, int, char **);
   virtual ~FixPythonInvoke() {}
   int setmask();
+  void init();
   virtual void end_of_step();
   virtual void post_force(int);
   virtual void min_setup(int);
   virtual void min_post_force(int);
   virtual double compute_scalar();
+  void init_list(int, class NeighList *);
 
  private:
   void * pFunc;
+  void * pNeighFunc; //JPD name of the function for providing the neighbors
+  double maxCutoffRadius; //JPD cutoff radius
+  int updateNlist; // JPD flag to toggle if Nlist passing is performed
+  int nlist_max;
+  /*int *nlist_mapping;
+  int *nlist_neighbors;
+  int *nlist_offset;*/
   int selected_callback;
+  void transferNeighborList();
+  void computeNeighborList();
   double py_energy; //RS external energy returned by python callback (post_force only!)
+  class NeighList *list;
 };
 
 }

@@ -427,6 +427,20 @@ class lammps(object):
     else:
       return None
 
+  def extract_nlist_from_fix(self,id):
+    if id: id = id.encode()
+    # start with nlist_mapping
+    self.lib.lammps_extract_nlist_mapping.restype = POINTER(c_int)
+    ptr_mapping = self.lib.lammps_extract_nlist_mapping(self.lmp,id)
+    # proceed with nlist_neighbors
+    self.lib.lammps_extract_nlist_neighbors.restype = POINTER(c_int)
+    ptr_neighbors = self.lib.lammps_extract_nlist_neighbors(self.lmp,id)
+    # proceed with nlist_offset
+    self.lib.lammps_extract_nlist_offset.restype = POINTER(c_int)
+    ptr_offset = self.lib.lammps_extract_nlist_offset(self.lmp,id)
+    return ptr_mapping, ptr_neighbors, ptr_offset
+
+
   # extract variable info
   # free memory for 1 double or 1 vector of doubles via lammps_free()
   # for vector, must copy nlocal returned values to local c_double vector
